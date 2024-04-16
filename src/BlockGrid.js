@@ -64,16 +64,15 @@ class BlockGrid {
     }
   }
 
-  directions = [
-    [0, 1],
-    [-1, 0],
-    [0, -1],
-    [1, 0],
-  ];
-
   removeConnectedBlocks = (x, y, colour, removedBlockArray) => {
     const adjacentBlocks = [];
     const parsedBlocks = new Set();
+    const directionsArray = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
 
     adjacentBlocks.push([x, y]);
 
@@ -83,28 +82,34 @@ class BlockGrid {
       // Get the row and column the last block from the array
       const [row, column] = adjacentBlocks.pop();
 
-      if (this.outsideBoundaries(row, column) || parsedBlocks.has(`${row},${column}`)) {
-        continue;
-      } else {
+      // If block is within the grid and hasn't already been parsed
+      if (this.withinBoundaries(row, column) && !parsedBlocks.has(`${row},${column}`)) {
+
+        // Add it to the parsedBlocks set
         parsedBlocks.add(`${row},${column}`);
-      }
 
-      if (this.checkBlockColour(row, column, colour)) {
+        // If current block matches colour of clicked block
+        if (this.checkBlockColour(row, column, colour)) {
 
-        // Remove the block from the grid by setting its colour to null
-        this.removeBlock(row, column)
+          // Remove current block from the grid by setting its colour to null
+          this.removeBlock(row, column)
 
-        // Update the array of blocks that have been removed
-        removedBlockArray.push([row, column]);
+          // Update the array of blocks that have been removed
+          removedBlockArray.push([row, column]);
 
-        // Add all adjacent blocks into the adjacentBlocks array to be parsed
-        this.directions.forEach(([xOffset, yOffset]) => {
-          adjacentBlocks.push([row + xOffset, column + yOffset]);
-        });
+          // Add all adjacent blocks into the adjacentBlocks array to be parsed
+          directionsArray.forEach(([xOffset, yOffset]) => {
+            adjacentBlocks.push([row + xOffset, column + yOffset]);
+          });
+        }
       }
     }
 
     return this;
+  }
+
+  withinBoundaries = (row, column) => {
+    return row >= 0 && column >= 0 && row < this.width && column < this.height;
   }
 
   checkBlockColour = (row, column, colour) => {
@@ -113,10 +118,6 @@ class BlockGrid {
 
   removeBlock = (row, column) => {
     this.grid[row][column].colour = null;
-  }
-
-  outsideBoundaries = (row, column) => {
-    return row < 0 || column < 0 || row >= this.width || column >= this.height
   }
 
   // Shift blocks downward, starting from the bottom iterate upwards
